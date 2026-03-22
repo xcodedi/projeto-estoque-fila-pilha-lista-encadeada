@@ -137,3 +137,106 @@ while True:
         print("═" * 60)
         estoque.listar_produtos_cadastrados()
         pausar()
+
+# Opção 5: Pesquisar produto por ID ou nome
+    elif opcao == "5":
+        limpar_tela()
+        print("PESQUISAR PRODUTO")
+        print("═" * 40)
+        
+        print("1 - Pesquisar por ID")
+        print("2 - Pesquisar por nome")
+        sub_opcao = input("Escolha: ")
+        
+        if sub_opcao == "1":
+            id_produto = input("Digite o ID do produto: ")
+            produto = estoque.buscar_produto_por_id(id_produto)
+            
+            if produto:
+                print("\nPRODUTO ENCONTRADO:")
+                print(f"   ID: {produto['ID']}")
+                print(f"   Nome: {produto['Nome']}")
+                print(f"   Quantidade: {produto['Quantidade']}")
+                print(f"   Preço: R$ {produto['Preco']:.2f}")
+            else:
+                print(f"Produto com ID {id_produto} não encontrado!")
+                
+        elif sub_opcao == "2":
+            nome = input("Digite o nome (ou parte do nome): ")
+            resultados = estoque.buscar_por_nome(nome)
+            
+            if resultados:
+                print(f"\n{len(resultados)} produto(s) encontrado(s):")
+                for p in resultados:
+                    print(f"   ID: {p['ID']} | {p['Nome']} | Qtd: {p['Quantidade']} | R$ {p['Preco']:.2f}")
+            else:
+                print(f"Nenhum produto encontrado com '{nome}'")
+        else:
+            print("Opção inválida!")
+        
+        pausar()
+
+# Opção 6: Registrar venda (adicionar à fila de vendas)
+    elif opcao == "6":
+        limpar_tela()
+        print("REGISTRAR PEDIDO (FILA DE VENDAS)")
+        print("═" * 40)
+        
+
+        id_cliente = input("Digite o ID do cliente: ")
+        cliente = sistema.buscar_cliente_por_id(id_cliente)
+        
+        if not cliente:
+            print("Cliente não encontrado!")
+            pausar()
+            continue
+        
+
+        print("\nProdutos disponíveis:")
+        todos_produtos = estoque.produtos.listar_todos()
+        if not todos_produtos:
+            print("   Nenhum produto cadastrado!")
+            pausar()
+            continue
+            
+        for p in todos_produtos:
+            print(f"   ID: {p['ID']} | {p['Nome']} | Qtd: {p['Quantidade']} | R$ {p['Preco']:.2f}")
+        
+
+        id_produto = input("\nDigite o ID do produto: ")
+        produto = estoque.buscar_produto_por_id(id_produto)
+        
+        if not produto:
+            print("Produto não encontrado!")
+            pausar()
+            continue
+
+        try:
+            quantidade = int(input(f"Digite a quantidade (máx: {produto['Quantidade']}): "))
+            
+            if quantidade <= 0:
+                print("Quantidade deve ser maior que zero!")
+            elif quantidade > produto['Quantidade']:
+                print("Estoque insuficiente!")
+            else:
+                valor_total = quantidade * produto['Preco']
+                
+
+                venda = vendas.registrar_venda(
+                    cliente['ID'], 
+                    produto['ID'], 
+                    quantidade, 
+                    valor_total
+                )
+                
+                if venda:
+
+                    controle_desfazer.empilhar("registro_venda", venda)
+                    print(f"Pedido registrado na fila! Total: R$ {valor_total:.2f}")
+                else:
+                    print("Falha ao registrar venda!")
+                
+        except ValueError:
+            print("Digite um número inteiro válido!")
+        
+        pausar()
