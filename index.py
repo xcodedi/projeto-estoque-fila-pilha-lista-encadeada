@@ -447,3 +447,32 @@ while True:
             print("Digite um número válido!")
         
         pausar()
+
+# Opção 11: Exibir valor total do estoque
+    elif opcao == "11":
+        limpar_tela()
+        print("VALOR TOTAL DO ESTOQUE")
+        print("═" * 40)
+        estoque.calcular_valor_total_do_estoque()
+        pausar()
+
+# Opção 12: Exibir valor total de vendas realizadas
+    elif opcao == "12":
+        limpar_tela()
+        print("VALOR TOTAL DE VENDAS REALIZADAS")
+        print("═" * 40)
+        vendas.calcular_total_vendas_realizadas()
+        pausar()
+
+# Opção 13: Exibir clientes e valores gastos
+    elif opcao == "13":
+        limpar_tela()
+        print("CLIENTES E VALORES GASTOS")
+        print("═" * 50)
+        sistema.listar_clientes_com_gastos()
+        pausar()
+
+
+    else:
+        print("Opção inválida! Tente novamente.")
+        pausar()
