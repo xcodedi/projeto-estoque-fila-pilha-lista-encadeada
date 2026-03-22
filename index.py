@@ -240,3 +240,115 @@ while True:
             print("Digite um número inteiro válido!")
         
         pausar()
+
+# Opção 7: Ver fila de vendas pendentes
+    elif opcao == "7":
+        limpar_tela()
+        print("FILA DE VENDAS PENDENTES")
+        print("═" * 60)
+        vendas.ver_fila_de_vendas()
+        pausar()
+
+# Opção 8: Concluir a venda
+    elif opcao == "8":
+        limpar_tela()
+        print("CONCLUIR VENDA")
+        print("═" * 40)
+        
+
+        venda = vendas.concluir_venda()
+        
+        if venda:
+
+            sucesso_estoque = estoque.usar_produto(venda['ID_Produto'], venda['Quantidade'])
+            
+            if sucesso_estoque:
+
+                sistema.adicionar_gasto_ao_cliente(venda['ID_Cliente'], venda['Valor_Total'])
+                
+                print("\n" + "="*50)
+                print("VENDA CONCLUÍDA COM SUCESSO!")
+                print("="*50)
+                print(f"   ID da Venda: {venda['ID_Venda']}")
+                print(f"   Cliente ID: {venda['ID_Cliente']}")
+                print(f"   Produto ID: {venda['ID_Produto']}")
+                print(f"   Quantidade: {venda['Quantidade']}")
+                print(f"   Valor Total: R$ {venda['Valor_Total']:.2f}")
+                print(f"   Data: {venda['Data']}")
+                print("="*50)
+                print("Estoque atualizado!")
+                print("Gasto do cliente atualizado!")
+            else:
+                print("Erro ao atualizar estoque! A venda foi concluída mas o estoque não foi atualizado.")
+        else:
+            print("Nenhuma venda na fila para concluir!")
+        
+        pausar()
+
+
+# Opção 9: Desfazer última operação (cadastro de cliente, cadastro de produto ou registro de venda)
+    elif opcao == "9":
+        limpar_tela()
+        print("DESFAZER ÚLTIMA OPERAÇÃO")
+        print("═" * 40)
+        
+        ultima_operacao = controle_desfazer.desempilhar()
+        
+        if not ultima_operacao:
+            print("Nenhuma operação para desfazer!")
+            pausar()
+            continue
+        
+        operacao = ultima_operacao['operacao']
+        dados = ultima_operacao['dados']
+        
+        print(f"\nÚltima operação: {operacao}")
+        print(f"   Dados: {dados}")
+        print("-" * 40)
+        
+        desfazer_confirmado = input("Tem certeza que deseja desfazer esta operação? (s/n): ")
+        
+        if desfazer_confirmado.lower() == 's':
+
+            if operacao == "cadastro_cliente":
+                cliente_id = dados['ID']
+                cliente_removido = sistema.clientes.remover(cliente_id, chave_id='ID')
+                
+                if cliente_removido:
+                    print(f"Cliente '{dados['Nome']}' removido!")
+                    sistema._salvar_arquivo()
+
+            elif operacao == "cadastro_produto":
+                produto_id = dados['ID']
+                produto_removido = estoque.produtos.remover(produto_id, chave_id='ID')
+                
+                if produto_removido:
+                    print(f"Produto '{dados['Nome']}' removido!")
+                    estoque._salvar_na_memoria()
+
+            elif operacao == "registro_venda":
+                venda_id = dados['ID_Venda']
+                
+                vendas_pendentes = []
+                fila_temp = vendas.fila_vendas.itens.copy()
+                
+                while fila_temp:
+                    venda_atual = fila_temp.pop()
+                    if venda_atual['ID_Venda'] != venda_id:
+                        vendas_pendentes.append(venda_atual)
+                
+                vendas.fila_vendas.itens = []
+                for v in reversed(vendas_pendentes):
+                    vendas.fila_vendas.adicionar(v)
+                
+                print(f"Pedido #{venda_id} removido!")
+                vendas._salvar_fila()
+
+            else:
+                print("Operação não suportada.")
+
+        else:
+            print("Cancelado.")
+            controle_desfazer.empilhar(operacao, dados)
+
+        pausar()
