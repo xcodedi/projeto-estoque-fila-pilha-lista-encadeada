@@ -120,3 +120,104 @@ class Vendas:
         except Exception as e:
             print(f"Erro ao salvar histórico: {e}")
     
+    def registrar_venda(self, id_cliente, id_produto, quantidade, valor_total):
+        if quantidade <= 0:
+            print("Erro: Quantidade deve ser maior que zero!")
+            return None
+        
+        if valor_total <= 0:
+            print("Erro: Valor total deve ser positivo!")
+            return None
+        
+        venda = {
+            "ID_Venda": self.proximo_id_venda,
+            "ID_Cliente": int(id_cliente),
+            "ID_Produto": int(id_produto),
+            "Quantidade": int(quantidade),
+            "Valor_Total": float(valor_total),
+            "Data": "Pendente"
+        }
+        
+        self.fila_vendas.adicionar(venda)
+        self.proximo_id_venda += 1
+        
+        self._salvar_fila()
+        print(f"Pedido #{venda['ID_Venda']} registrado na fila!")
+        return venda
+    
+    def concluir_venda(self):
+        if self.fila_vendas.is_empty():
+            print("Nenhum pedido na fila para concluir!")
+            return None
+        
+        venda = self.fila_vendas.atender()
+        
+        venda['Data'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.historico_vendas.append(venda)
+        
+        self._salvar_fila()
+        self._salvar_historico()
+        
+        print(f"Venda #{venda['ID_Venda']} concluída com sucesso!")
+        return venda
+    
+    def ver_fila_de_vendas(self):
+        if self.fila_vendas.is_empty():
+            print("\nFila de vendas vazia!")
+            return []
+        
+        print("\n" + "="*70)
+        print("FILA DE PEDIDOS (ordem de chegada)")
+        print("="*70)
+        print(f"{'Posição':<8}{'ID Venda':<10}{'Cliente':<10}{'Produto':<10}{'Qtd':<5}{'Total':<12}")
+        print("-"*70)
+        
+        for i, venda in enumerate(self.fila_vendas.itens[::-1], 1):
+            print(f"{i:<8}{venda['ID_Venda']:<10}{venda['ID_Cliente']:<10}"
+                  f"{venda['ID_Produto']:<10}{venda['Quantidade']:<5}"
+                  f"R$ {venda['Valor_Total']:<12.2f}")
+        
+        print("="*70)
+        return self.fila_vendas.itens
+    
+    def calcular_total_vendas_realizadas(self):
+        total = sum(venda['Valor_Total'] for venda in self.historico_vendas)
+        print(f"\nTotal de vendas realizadas: R$ {total:.2f}")
+        return total
+    
+    def get_vendas_por_cliente(self, id_cliente):
+        vendas_cliente = []
+        for venda in self.historico_vendas:
+            if venda['ID_Cliente'] == id_cliente:
+                vendas_cliente.append(venda)
+        return vendas_cliente
+    
+    def is_empty(self):
+        return self.fila_vendas.is_empty()
+    
+    def listar_vendas_concluidas(self):
+        if not self.historico_vendas:
+            print("\nNenhuma venda concluída ainda!")
+            return []
+        
+        print("\n" + "="*80)
+        print("VENDAS CONCLUÍDAS (HISTÓRICO)")
+        print("="*80)
+        print(f"{'ID Venda':<10}{'Cliente':<10}{'Produto':<10}{'Qtd':<7}{'Total':<12}{'Data':<20}")
+        print("-"*80)
+        
+        for venda in self.historico_vendas:
+            print(f"{venda['ID_Venda']:<10}{venda['ID_Cliente']:<10}"
+                  f"{venda['ID_Produto']:<10}{venda['Quantidade']:<7}"
+                  f"R$ {venda['Valor_Total']:<12.2f}{venda['Data']:<20}")
+        
+        print("="*80)
+        return self.historico_vendas
+    
+    def remover_venda_concluida(self, id_venda):
+        for i, venda in enumerate(self.historico_vendas):
+            if venda['ID_Venda'] == id_venda:
+                venda_removida = self.historico_vendas.pop(i)
+                self._salvar_historico()
+                return venda_removida
+        return None
