@@ -95,3 +95,73 @@ class Cliente:
         
         self._salvar_arquivo()
         return novo_cliente
+   
+    def buscar_cliente_por_id(self, id_cliente):
+        try:
+            id_busca = int(id_cliente) if isinstance(id_cliente, str) else id_cliente
+            return self.clientes.buscar(id_busca, chave_id='ID')
+        except (ValueError, TypeError):
+            return None
+    
+    def adicionar_gasto_ao_cliente(self, id_cliente, valor):
+        cliente = self.buscar_cliente_por_id(id_cliente)
+        
+        if cliente is None:
+            print(f"Erro: Cliente ID {id_cliente} não encontrado!")
+            return False
+        
+        if valor <= 0:
+            print("Erro: Valor do gasto deve ser positivo!")
+            return False
+        
+        novo_gasto = cliente["Gasto Total"] + valor
+        sucesso = self.clientes.atualizar(id_cliente, {'Gasto Total': novo_gasto}, chave_id='ID')
+        
+        if sucesso:
+            self._salvar_arquivo()
+            print(f" Gasto de R$ {valor:.2f} adicionado a {cliente['Nome']}")
+            return True
+        return False
+    
+    def listar_clientes(self):
+        todos = self.clientes.listar_todos()
+        
+        if not todos:
+            print(" Nenhum cliente cadastrado")
+            return []
+        
+        print("\n" + "="*50)
+        print("CLIENTES CADASTRADOS")
+        print("="*50)
+        print(f"{'ID':<5} {'NOME':<20} {'GASTO TOTAL':<15}")
+        print("-"*50)
+        
+        for c in todos:
+            print(f"{c['ID']:<5} {c['Nome']:<20} R$ {c['Gasto Total']:<15.2f}")
+        
+        print("="*50)
+        return todos
+    
+    def listar_clientes_com_gastos(self):
+        return self.listar_clientes()
+    
+    def subtrair_gasto_do_cliente(self, id_cliente, valor):
+        cliente = self.buscar_cliente_por_id(id_cliente)
+        
+        if cliente is None:
+            print(f"Erro: Cliente ID {id_cliente} não encontrado!")
+            return False
+        
+        if valor <= 0:
+            print("Erro: Valor deve ser positivo!")
+            return False
+        
+        novo_gasto = max(0, cliente["Gasto Total"] - valor)
+        sucesso = self.clientes.atualizar(id_cliente, {'Gasto Total': novo_gasto}, chave_id='ID')
+        
+        if sucesso:
+            self._salvar_arquivo()
+            print(f"R$ {valor:.2f} subtraído do gasto de {cliente['Nome']}")
+            print(f"Novo gasto total: R$ {novo_gasto:.2f}")
+            return True
+        return False
