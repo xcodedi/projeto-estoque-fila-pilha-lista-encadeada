@@ -6,16 +6,16 @@
 
 ## 📝 Título do Trabalho
 
-**Mini Sistema de Estoque e Vendas com Estruturas de Dados em Python**
+**Sistema de Estoque e Vendas com Estruturas de Dados em Python**
 
 ## 👥 Integrantes
 
+* Ariel David de Almeida Chaves - RA: 1136093
 * Diego Meira - RA: 1109435
-* Vinicius Hoffelder - RA: 1137833
-* Kael Fuchs Zatti - RA: 1137819
 * Eduardo Barreda Mello - RA: 1138704
 * Leonardo Grimm Maziero - RA: 1137914
-* Ariel David de Almeida Chaves - RA: 1136093
+* Kael Fuchs Zatti - RA: 1137819
+* Vinicius Hoffelder - RA: 1137833
 
 
 ---
@@ -92,9 +92,9 @@ O sistema utiliza arquivos **CSV ou TXT** como forma de armazenamento de dados.
 
 ### Arquivos utilizados:
 
-* `clientes.csv` ou `clientes.txt`
-* `produtos.csv` ou `produtos.txt`
-* `vendas.csv` ou `vendas.txt`
+* `clientes.txt`
+* `produtos.txt`
+* `vendas.txt`
 
 ### Benefícios:
 
@@ -127,10 +127,8 @@ cd nome-do-projeto
 3. Execute o sistema:
 
 ```bash
-python main.py
+python index.py
 ```
-
-*(O nome do arquivo principal pode variar)*
 
 ---
 
@@ -153,7 +151,6 @@ O usuário deve interagir digitando o número correspondente à opção desejada
 
 * O sistema possui tratamento de erros para entradas inválidas
 * Operações incorretas não afetam os dados salvos
-* O sistema nunca encerra abruptamente diante de erros
 * Todas as regras de validação são respeitadas (estoque, valores, IDs, etc.)
 * Foi solicitado que o algoritmo implementasse apenas funcionalidades mínimas. Entretanto, optamos por incluir uma funcionalidade adicional que separa o processo de reversão de uma operação de venda em etapas distintas: reversão na fila, no cliente e no produto. Essa separação não foi uma escolha de design, mas sim uma necessidade técnica decorrente da arquitetura do sistema. Como cada módulo gerencia seus próprios dados e possui persistência em arquivos separados, não há suporte a transações que agrupem operações relacionadas. Além disso, as classes possuem responsabilidades únicas e não compartilham o estado entre si, o que torna indispensável tratar cada reversão de forma independente.
 * O desenvolvimento dos prints de caracteres utilizados para gerar tabelas com linhas e colunas corretamente alinhadas foi realizado com o auxílio de uma inteligência artificial
