@@ -352,3 +352,98 @@ while True:
             controle_desfazer.empilhar(operacao, dados)
 
         pausar()
+
+# Opção 10: Desfazer venda concluída
+    elif opcao == "10": 
+        limpar_tela()
+        print("DESFAZER VENDA CONCLUÍDA")
+        print("═" * 50)
+        
+        vendas_concluidas = vendas.listar_vendas_concluidas()
+        
+        if not vendas_concluidas:
+            pausar()
+            continue
+        
+        try:
+            id_venda = int(input("\nDigite o ID da venda que deseja desfazer (ou 0 para cancelar): "))
+            
+            if id_venda == 0:
+                continue
+            
+            venda_para_desfazer = None
+            for venda in vendas_concluidas:
+                if venda['ID_Venda'] == id_venda:
+                    venda_para_desfazer = venda
+                    break
+            
+            if not venda_para_desfazer:
+                print(f"Venda com ID {id_venda} não encontrada!")
+                pausar()
+                continue
+            
+            print("\n" + "="*50)
+            print("DETALHES DA VENDA:")
+            print("="*50)
+            print(f"ID Venda: {venda_para_desfazer['ID_Venda']}")
+            print(f"ID Cliente: {venda_para_desfazer['ID_Cliente']}")
+            print(f"ID Produto: {venda_para_desfazer['ID_Produto']}")
+            print(f"Quantidade: {venda_para_desfazer['Quantidade']}")
+            print(f"Valor Total: R$ {venda_para_desfazer['Valor_Total']:.2f}")
+            print(f"Data: {venda_para_desfazer['Data']}")
+            print("="*50)
+            
+            confirmacao = input("\nTem certeza que deseja desfazer esta venda? (s/n): ")
+            
+            if confirmacao.lower() == 's':
+                sucesso_estoque = estoque.restaurar_estoque(
+                    venda_para_desfazer['ID_Produto'], 
+                    venda_para_desfazer['Quantidade']
+                )
+                
+                if not sucesso_estoque:
+                    print("Erro ao restaurar estoque!")
+                    pausar()
+                    continue
+                
+                sucesso_cliente = sistema.subtrair_gasto_do_cliente(
+                    venda_para_desfazer['ID_Cliente'],
+                    venda_para_desfazer['Valor_Total']
+                )
+                
+                if not sucesso_cliente:
+                    print("Erro ao atualizar gasto do cliente!")
+                    estoque.usar_produto(
+                        venda_para_desfazer['ID_Produto'], 
+                        venda_para_desfazer['Quantidade']
+                    )
+                    pausar()
+                    continue
+                
+                venda_removida = vendas.remover_venda_concluida(id_venda)
+                
+                if venda_removida:
+                    print("\n" + "="*50)
+                    print("VENDA DESFEITA COM SUCESSO!")
+                    print("="*50)
+                    print(f"✓ Estoque restaurado")
+                    print(f"✓ Gasto do cliente ajustado")
+                    print(f"✓ Venda removida do histórico")
+                    print("="*50)
+                else:
+                    print("Erro ao remover venda do histórico!")
+                    estoque.usar_produto(
+                        venda_para_desfazer['ID_Produto'], 
+                        venda_para_desfazer['Quantidade']
+                    )
+                    sistema.adicionar_gasto_ao_cliente(
+                        venda_para_desfazer['ID_Cliente'],
+                        venda_para_desfazer['Valor_Total']
+                    )
+            else:
+                print("Operação cancelada.")
+                
+        except ValueError:
+            print("Digite um número válido!")
+        
+        pausar()
