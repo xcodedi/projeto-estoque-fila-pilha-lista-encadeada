@@ -104,3 +104,116 @@ class Produto:
         
         print(f"Produto {nome_produto} cadastrado com sucesso (ID: {novo_produto['ID']})!")
         return novo_produto
+
+    def buscar_produto_por_id(self, id_produto):
+        try:
+            id_busca = int(id_produto) if isinstance(id_produto, str) else id_produto
+            return self.produtos.buscar(id_busca, chave_id='ID')
+        except (ValueError, TypeError):
+            return None
+    
+    def buscar_por_nome(self, nome_produto):
+        if not nome_produto:
+            return []
+        
+        nome_busca = nome_produto.lower().strip()
+        resultados = []
+        todos = self.produtos.listar_todos()
+        
+        for produto in todos:
+            if nome_busca in produto['Nome'].lower():
+                resultados.append(produto)
+        
+        return resultados
+    
+    def usar_produto(self, id_produto, quantidade_usada):
+        produto = self.buscar_produto_por_id(id_produto)
+        
+        if produto is None:
+            print(f"Erro: Produto ID {id_produto} não encontrado!")
+            return False
+        
+        if quantidade_usada <= 0:
+            print("Erro: Quantidade deve ser maior que zero!")
+            return False
+        
+        if produto['Quantidade'] < quantidade_usada:
+            print(f"Erro: Estoque insuficiente! Disponível: {produto['Quantidade']}, Solicitado: {quantidade_usada}")
+            return False
+        
+        nova_quantidade = produto['Quantidade'] - quantidade_usada
+        sucesso = self.produtos.atualizar(id_produto, {'Quantidade': nova_quantidade}, chave_id='ID')
+        
+        if sucesso:
+            self._salvar_na_memoria()
+            print(f"Estoque atualizado: {produto['Nome']} agora tem {nova_quantidade} unidades")
+            return True
+        else:
+            print("Erro ao atualizar estoque")
+            return False
+    
+    def repor_estoque(self, id_produto, quantidade_reposicao):
+        produto = self.buscar_produto_por_id(id_produto)
+        
+        if produto is None:
+            print(f"Erro: Produto ID {id_produto} não encontrado!")
+            return False
+        
+        if quantidade_reposicao <= 0:
+            print("Erro: Quantidade de reposição deve ser maior que zero!")
+            return False
+        
+        nova_quantidade = produto['Quantidade'] + quantidade_reposicao
+        sucesso = self.produtos.atualizar(id_produto, {'Quantidade': nova_quantidade}, chave_id='ID')
+        
+        if sucesso:
+            self._salvar_na_memoria()
+            print(f"Estoque reposto: {produto['Nome']} agora tem {nova_quantidade} unidades")
+            return True
+        return False
+    
+    def listar_produtos_cadastrados(self):
+        todos = self.produtos.listar_todos()
+        
+        if not todos:
+            print("Nenhum produto cadastrado")
+            return []
+        
+        print("\n" + "="*60)
+        print("PRODUTOS CADASTRADOS")
+        print("="*60)
+        print(f"{'ID':<5} {'NOME':<20} {'QUANTIDADE':<15} {'PREÇO':<10}")
+        print("-"*60)
+        
+        for p in todos:
+            print(f"{p['ID']:<5} {p['Nome']:<20} {p['Quantidade']:<15} R$ {p['Preco']:<10.2f}")
+        
+        print("="*60)
+        return todos
+    
+    def calcular_valor_total_do_estoque(self):
+        todos = self.produtos.listar_todos()
+        valor_total = sum(p['Quantidade'] * p['Preco'] for p in todos)
+        
+        print(f"\nValor total do estoque: R$ {valor_total:.2f}")
+        return valor_total
+    
+    def restaurar_estoque(self, id_produto, quantidade):
+        produto = self.buscar_produto_por_id(id_produto)
+        
+        if produto is None:
+            print(f"Erro: Produto ID {id_produto} não encontrado!")
+            return False
+        
+        if quantidade <= 0:
+            print("Erro: Quantidade deve ser maior que zero!")
+            return False
+        
+        nova_quantidade = produto['Quantidade'] + quantidade
+        sucesso = self.produtos.atualizar(id_produto, {'Quantidade': nova_quantidade}, chave_id='ID')
+        
+        if sucesso:
+            self._salvar_na_memoria()
+            print(f"Estoque restaurado: {produto['Nome']} agora tem {nova_quantidade} unidades")
+            return True
+        return False
